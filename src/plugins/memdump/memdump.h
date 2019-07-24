@@ -88,7 +88,7 @@
  * otherwise) that you are offering unlimited, non-exclusive right to      *
  * reuse, modify, and relicense the code.  DRAKVUF will always be          *
  * available Open Source, but this is important because the inability to   *
-* relicense code has caused devastating problems for other Free Software  *
+ * relicense code has caused devastating problems for other Free Software  *
  * projects (such as KDE and NASM).                                        *
  * To specify special license conditions of your contributions, just say   *
  * so when you send them.                                                  *
@@ -102,82 +102,25 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "plugin_utils.h"
-#include <algorithm>
-#include <cctype>
-#include <iostream>
+#ifndef MEMDUMP_H
+#define MEMDUMP_H
 
-using std::string;
-using std::cout;
-using std::endl;
+#include <glib.h>
+#include "plugins/private.h"
+#include "plugins/plugins_ex.h"
 
-void dump_buffer(const uint8_t buffer[], const size_t count, const size_t columns, addr_t base_addr, std::string header, std::string footer)
+struct memdump_config
 {
-    cout << header << endl;
+    const char* memdump_dir;
+};
 
-    for (size_t r = 0; r < count; r += columns)
-    {
-        // Print base address
-        printf("\n\t0x%08lX | +0x%04zX |", base_addr + r, r);
-
-        // Print memory contents as bytes in hex format
-        size_t c;
-        for (c = 0; c != std::min(columns, count -r); ++c)
-            printf(" %02X", buffer[r + c]);
-
-        // Print spaces if row is "short"
-        for (size_t s = 0; s != columns - c; ++s)
-            printf("   ");
-
-        // Print bytes as ASCII characters
-        printf(" | ");
-        for (size_t a = 0; a != c; ++a)
-        {
-            auto v = buffer[r + a];
-            if (std::isprint(v))
-                printf("%c", v);
-            else
-                printf(".");
-        }
-    }
-
-    cout << endl << footer << endl;
-}
-
-void dump_va(vmi_instance_t vmi, access_context_t* ctx, const size_t count, const size_t columns, std::string header, std::string footer)
+class memdump: public pluginex
 {
-    std::unique_ptr<uint8_t[]> buffer(new uint8_t[count] {0});
-    if (VMI_SUCCESS == vmi_read(vmi, ctx, count, buffer.get(), nullptr))
-        dump_buffer(buffer.get(), count, columns, ctx->addr, header, footer);
-}
+public:
+    const char* memdump_dir;
+    int memdump_counter;
 
-static std::string format_flag(string flag, output_format_t format)
-{
-    if ( format == OUTPUT_KV )
-        return flag + "=1,";
+    memdump(drakvuf_t drakvuf, const memdump_config* config, output_format_t output);
+};
 
-    return flag + " | ";
-}
-
-std::string parse_flags(uint64_t flags, flags_str_t flags_map, output_format_t format, std::string empty)
-{
-    string output;
-
-    for (const auto flag: flags_map)
-        if ((flag.first & flags) == flag.first)
-            output += format_flag(flag.second, format);
-
-    if (output.empty())
-    {
-        output = empty;
-    }
-    else
-    {
-        if (format == OUTPUT_KV)
-            output.resize(output.size() - 1);
-        else
-            output.resize(output.size() - 3);
-    }
-
-    return output;
-}
+#endif

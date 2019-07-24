@@ -190,8 +190,8 @@ if PLUGIN_WMIMON
 sources += wmimon/wmimon.cpp
 endif
 
-if PLUGIN_WRITEVIRTUALMEMMON
-sources +=writevirtualmemmon/writevirtualmemmon.cpp
+if PLUGIN_MEMDUMP
+sources += memdump/memdump.cpp
 endif
 
 ###############################################################################

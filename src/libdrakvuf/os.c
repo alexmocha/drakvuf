@@ -120,7 +120,7 @@ bool fill_offsets_from_rekall(drakvuf_t drakvuf, size_t size, const char* names 
         return 0;
 
     if (!drakvuf_get_struct_members_array_rva(
-                drakvuf, names, size, drakvuf->offsets))
+            drakvuf, names, size, drakvuf->offsets))
     {
         PRINT_DEBUG("Failed to find offsets for array of structure names and subsymbols.\n");
     }
@@ -365,4 +365,20 @@ bool drakvuf_is_crashreporter(drakvuf_t drakvuf, drakvuf_trap_info_t* info, vmi_
         return drakvuf->osi.is_crashreporter( drakvuf, info, pid );
 
     return false;
+}
+
+status_t drakvuf_find_mmvad(drakvuf_t drakvuf, addr_t eprocess, addr_t vaddr, mmvad_info_t* out_mmvad)
+{
+    if ( drakvuf->osi.find_mmvad )
+        return drakvuf->osi.find_mmvad(drakvuf, eprocess, vaddr, out_mmvad);
+
+    return 0;
+}
+
+status_t drakvuf_get_pid_from_handle(drakvuf_t drakvuf, drakvuf_trap_info_t* info, addr_t handle, vmi_pid_t* pid)
+{
+    if ( drakvuf->osi.get_pid_from_handle )
+        return drakvuf->osi.get_pid_from_handle(drakvuf, info, handle, pid);
+
+    return 0;
 }
